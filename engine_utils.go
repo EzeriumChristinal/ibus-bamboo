@@ -605,7 +605,7 @@ func (e *IBusBambooEngine) getLatestWmClass() string {
 	if isGnome {
 		wmClass, _ = gnomeGetFocusWindowClass()
 	} else if isWayland {
-		wmClass = wlAppId
+		wmClass = getWlAppId()
 	}
 	if wmClass == "" {
 		wmClass = x11GetFocusWindowClass()
