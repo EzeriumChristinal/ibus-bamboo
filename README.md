@@ -1,17 +1,66 @@
-# ibus-bamboo — correctness audit fork
+# ibus-bamboo (audit fork)
 
-Fork of [BambooEngine/ibus-bamboo](https://github.com/BambooEngine/ibus-bamboo).
-It carries a small correctness audit of the engine: focus handling, the key
-queue, startup, session-bus use, and X11 memory safety. Each fix was
-reproduced with a failing test before it was made.
+A correctness-focused fork of [BambooEngine/ibus-bamboo](https://github.com/BambooEngine/ibus-bamboo).
 
-The work is up for review upstream as a stack, in merge order:
+Bản fork sửa các lỗi về đồng bộ trạng thái, race condition, bộ nhớ X11 và kết nối DBus. Mỗi lỗi đều có unit test reproducing trước khi sửa[cite: 1].
 
-1. [Settle composition state on focus change, reset, disable](https://github.com/BambooEngine/ibus-bamboo/pull/611)
-2. [Give each engine its own key queue; serialize engine state](https://github.com/BambooEngine/ibus-bamboo/pull/612)
-3. [Load lookup data without racing or crashing; finish engine setup in the constructor](https://github.com/BambooEngine/ibus-bamboo/pull/613)
-4. [Stop closing the shared session-bus connection per focus event](https://github.com/BambooEngine/ibus-bamboo/pull/614)
-5. [Fix X11 NULL-deref, leaks, and unbounded copies](https://github.com/BambooEngine/ibus-bamboo/pull/615)
+---
 
-Branches `audit/*` hold the same stack on this fork. `go vet` is clean;
-`go test` and `go test -race` pass (needs Go plus X11/GTK dev headers).
+## Patches / Các bản sửa lỗi
+
+Changes are structured as 5 commits pending upstream review:
+
+1. **Focus state handling** ([PR #611](https://github.com/BambooEngine/ibus-bamboo/pull/611))
+   * Settles composition state on focus change, reset, and disable events[cite: 1].
+   * Cố định trạng thái gõ khi chuyển window, reset hoặc tắt bộ gõ[cite: 1].
+
+2. **Isolated key queue** ([PR #612](https://github.com/BambooEngine/ibus-bamboo/pull/612))
+   * Dedicated key queue per engine instance; serializes state changes[cite: 1].
+   * Mỗi engine dùng một key queue riêng, cô lập và xếp hàng thứ tự xử lý phím[cite: 1].
+
+3. **Safe initialization** ([PR #613](https://github.com/BambooEngine/ibus-bamboo/pull/613))
+   * Loads lookup data without races; finishes setup inside constructor[cite: 1].
+   * Khởi tạo dữ liệu tra cứu an toàn luồng, chuyển cài đặt engine vào constructor[cite: 1].
+
+4. **Persistent DBus session** ([PR #614](https://github.com/BambooEngine/ibus-bamboo/pull/614))
+   * Keeps shared session-bus connection open across focus events[cite: 1].
+   * Không đóng/mở lại kết nối DBus dùng chung mỗi khi đổi focus[cite: 1].
+
+5. **X11 memory safety** ([PR #615](https://github.com/BambooEngine/ibus-bamboo/pull/615))
+   * Fixes NULL dereferences, memory leaks, and unbounded copies in X11 bindings[cite: 1].
+   * Sửa lỗi con trỏ NULL, rò rỉ bộ nhớ và tràn đệm trong code X11[cite: 1].
+
+---
+
+## Status / Trạng thái
+
+* **Branches**: `audit/*` contains individual patches[cite: 1].
+* **Verification**: `go vet`, `go test`, and `go test -race` pass cleanly[cite: 1].
+
+---
+
+## Build & Test / Biên dịch và Kiểm thử
+
+### Requirements / Thư viện phụ thuộc
+
+Debian / Ubuntu / LMDE:
+```bash
+sudo apt install golang libibus-1.0-dev libgtk-3-dev libx11-dev
+```
+
+### Commands / Lệnh thực thi
+
+```bash
+# Run test suite with race detector
+go test -race ./...
+
+# Build binary
+make build
+```
+
+---
+
+## Upstream
+
+* Source: [BambooEngine/ibus-bamboo](https://github.com/BambooEngine/ibus-bamboo)
+* License: GPL-3.0
