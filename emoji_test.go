@@ -20,6 +20,11 @@ package main
 
 import (
 	"testing"
+	"unicode/utf8"
+
+	"ibus-bamboo/config"
+
+	ibus "github.com/BambooEngine/goibus"
 )
 
 func TestEmojiFindResult(t *testing.T) {
@@ -57,5 +62,47 @@ func TestFilterEmoji(t *testing.T) {
 	var grinnings3 = be.Filter("grin")
 	if !inStringList(grinnings3, "😀") {
 		t.Errorf("Filtering emojo `grin`, expected %v got %v", true, inStringList(grinnings3, "😀"))
+	}
+}
+
+// The preedit cursor position is measured in characters; using the byte
+// length of a multi-byte emoji pushes it past the end of the preedit text.
+func TestEmojiPreeditCursorPosCountsRunes(t *testing.T) {
+	trie, err := loadEmojiOne(DictEmojiOne)
+	if err != nil {
+		t.Skipf("emoji data unavailable: %s", err)
+	}
+	emojiTrie.Store(trie)
+	e, fe := newRegressionEngine(config.PreeditIM)
+	e.emojiLookupTable = ibus.NewLookupTable()
+	e.emoji.keys = []rune("grin")
+	e.updateEmojiLookupTable()
+	text := fe.getPreeditText()
+	if text == "" {
+		t.Fatalf("setup: no emoji preedit produced")
+	}
+	if got, want := fe.getPreeditCursorPos(), uint32(utf8.RuneCountInString(text)); got != want {
+		t.Errorf("preedit cursor_pos = %d (%d bytes), want %d runes for %q", got, len(text), want, text)
+	}
+}
+
+// ProcessKeyEvent already holds the engine lock when it dispatches to the
+// emoji handler, so arrow navigation must not call the locking D-Bus methods.
+func TestEmojiLookupTableArrowKeysDoNotDeadlock(t *testing.T) {
+	e, _ := newRegressionEngine(config.PreeditIM)
+	e.isEmojiLTOpened = true
+	lt := ibus.NewLookupTable()
+	lt.PageSize = uint32(EmojiMaxPageSize)
+	for i := 0; i < 5; i++ {
+		lt.AppendCandidate("x")
+	}
+	e.emojiLookupTable = lt
+
+	for _, key := range []uint32{IBusLeft, IBusRight, IBusUp, IBusDown, IBusPageUp, IBusPageDown} {
+		runWithDeadlockGuard(t, func() {
+			if ret, _ := e.ProcessKeyEvent(key, 0, 0); !ret {
+				t.Errorf("key 0x%04x should be consumed by the open emoji table", key)
+			}
+		})
 	}
 }

@@ -55,6 +55,7 @@ type fakeEngine struct {
 	mu                  sync.Mutex
 	commitText          string
 	preeditText         string
+	preeditCursorPos    uint32
 	committed           bool
 	isHidePreeditText   bool
 	isHideAuxiliaryText bool
@@ -73,6 +74,12 @@ func (e *fakeEngine) getPreeditText() string {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	return e.preeditText
+}
+
+func (e *fakeEngine) getPreeditCursorPos() uint32 {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	return e.preeditCursorPos
 }
 
 func (e *fakeEngine) getHidePreeditText() bool {
@@ -195,11 +202,13 @@ func (e *fakeEngine) UpdatePreeditText(text *ibus.Text, cursor_pos uint32, visib
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	e.preeditText = text.Text
+	e.preeditCursorPos = cursor_pos
 }
 func (e *fakeEngine) UpdatePreeditTextWithMode(text *ibus.Text, cursor_pos uint32, visible bool, mode uint32) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	e.preeditText = text.Text
+	e.preeditCursorPos = cursor_pos
 }
 
 // @signal()

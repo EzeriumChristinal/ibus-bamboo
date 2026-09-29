@@ -21,6 +21,7 @@ package main
 
 import (
 	"strconv"
+	"unicode/utf8"
 
 	"github.com/BambooEngine/bamboo-core"
 	ibus "github.com/BambooEngine/goibus"
@@ -72,16 +73,16 @@ func (e *IBusBambooEngine) emojiProcessKeyEvent(keyVal uint32, keyCode uint32, s
 		return false
 	}
 	if keyVal == IBusLeft || keyVal == IBusUp {
-		e.CursorUp()
+		e.cursorUp()
 		return true
 	} else if keyVal == IBusRight || keyVal == IBusDown {
-		e.CursorDown()
+		e.cursorDown()
 		return true
 	} else if keyVal == IBusPageUp {
-		e.PageUp()
+		e.pageUp()
 		return true
 	} else if keyVal == IBusPageDown {
-		e.PageDown()
+		e.pageDown()
 		return true
 	}
 	if keyVal == IBusBackSpace {
@@ -129,7 +130,8 @@ func (e *IBusBambooEngine) emojiProcessKeyEvent(keyVal uint32, keyCode uint32, s
 	cps := e.emoji.Query()
 	if cps != nil {
 		codePoint0 := cps[0]
-		e.UpdatePreeditTextWithMode(ibus.NewText(codePoint0), uint32(len(codePoint0)), true, ibus.IBUS_ENGINE_PREEDIT_COMMIT)
+		// cursor_pos counts characters, not UTF-8 bytes: an emoji is one rune.
+		e.UpdatePreeditTextWithMode(ibus.NewText(codePoint0), uint32(utf8.RuneCountInString(codePoint0)), true, ibus.IBUS_ENGINE_PREEDIT_COMMIT)
 	} else {
 		e.UpdatePreeditTextWithMode(ibus.NewText(raw), uint32(rawTextLen), true, ibus.IBUS_ENGINE_PREEDIT_COMMIT)
 	}
@@ -168,7 +170,7 @@ func (e *IBusBambooEngine) updateEmojiLookupTable() {
 	var cps = e.emoji.Query()
 	if pos := e.emojiLookupTable.CursorPos; pos < uint32(len(cps)) {
 		var codePoint0 = cps[pos]
-		e.UpdatePreeditTextWithMode(ibus.NewText(codePoint0), uint32(len(codePoint0)), true, ibus.IBUS_ENGINE_PREEDIT_COMMIT)
+		e.UpdatePreeditTextWithMode(ibus.NewText(codePoint0), uint32(utf8.RuneCountInString(codePoint0)), true, ibus.IBUS_ENGINE_PREEDIT_COMMIT)
 	}
 }
 
