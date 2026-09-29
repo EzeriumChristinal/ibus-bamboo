@@ -211,6 +211,10 @@ func (e *IBusBambooEngine) updatePreviousTextInBatch(oldText, newText string, is
 	var isDirty = false
 	for i := 0; i < len(e.keyPressChan); i++ {
 		var keyEvents = <-e.keyPressChan
+		// This inline drain is a second consumer of keyPressChan, so it must
+		// mirror the pending counter keyPressCapturing maintains; otherwise
+		// keyQueueLen drifts up and every waitForQueueDrain stalls.
+		atomic.AddInt32(&e.keyQueueLen, -1)
 		var keyVal, keyCode, state = keyEvents[0], keyEvents[1], keyEvents[2]
 		isValidKey := isValidState(state) && e.isValidKeyVal(keyVal)
 		if isValidKey {
