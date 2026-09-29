@@ -235,7 +235,13 @@ func GetIMPropListByConfig(c *config.Config) *ibus.PropList {
 		},
 		IBusSeparator,
 	)
+	var inputMethods []string
 	for im := range c.InputMethodDefinitions {
+		inputMethods = append(inputMethods, im)
+	}
+	// Range over a map is randomized; a stable order keeps the "Kiểu gõ"
+	// menu from shuffling on every engine start.
+	for _, im := range sortStrings(inputMethods) {
 		var state = ibus.PROP_STATE_UNCHECKED
 		if im == c.InputMethod {
 			state = ibus.PROP_STATE_CHECKED
