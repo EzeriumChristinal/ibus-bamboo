@@ -276,49 +276,69 @@ func (e *IBusBambooEngine) SetSurroundingText(text dbus.Variant, cursorPos uint3
 func (e *IBusBambooEngine) PageUp() *dbus.Error {
 	e.Lock()
 	defer e.Unlock()
+	e.pageUp()
+	return nil
+}
+
+// pageUp assumes the engine lock is already held.
+func (e *IBusBambooEngine) pageUp() {
 	if e.isEmojiLTOpened && e.emojiLookupTable.PageUp() {
 		e.updateEmojiLookupTable()
 	}
 	if e.isInputModeLTOpened && e.inputModeLookupTable.PageUp() {
 		e.updateInputModeLT()
 	}
-	return nil
 }
 
 func (e *IBusBambooEngine) PageDown() *dbus.Error {
 	e.Lock()
 	defer e.Unlock()
+	e.pageDown()
+	return nil
+}
+
+// pageDown assumes the engine lock is already held.
+func (e *IBusBambooEngine) pageDown() {
 	if e.isEmojiLTOpened && e.emojiLookupTable.PageDown() {
 		e.updateEmojiLookupTable()
 	}
 	if e.isInputModeLTOpened && e.inputModeLookupTable.PageDown() {
 		e.updateInputModeLT()
 	}
-	return nil
 }
 
 func (e *IBusBambooEngine) CursorUp() *dbus.Error {
 	e.Lock()
 	defer e.Unlock()
+	e.cursorUp()
+	return nil
+}
+
+// cursorUp assumes the engine lock is already held.
+func (e *IBusBambooEngine) cursorUp() {
 	if e.isEmojiLTOpened && e.emojiLookupTable.CursorUp() {
 		e.updateEmojiLookupTable()
 	}
 	if e.isInputModeLTOpened && e.inputModeLookupTable.CursorUp() {
 		e.updateInputModeLT()
 	}
-	return nil
 }
 
 func (e *IBusBambooEngine) CursorDown() *dbus.Error {
 	e.Lock()
 	defer e.Unlock()
+	e.cursorDown()
+	return nil
+}
+
+// cursorDown assumes the engine lock is already held.
+func (e *IBusBambooEngine) cursorDown() {
 	if e.isEmojiLTOpened && e.emojiLookupTable.CursorDown() {
 		e.updateEmojiLookupTable()
 	}
 	if e.isInputModeLTOpened && e.inputModeLookupTable.CursorDown() {
 		e.updateInputModeLT()
 	}
-	return nil
 }
 
 func (e *IBusBambooEngine) CandidateClicked(index uint32, button uint32, state uint32) *dbus.Error {

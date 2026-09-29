@@ -373,16 +373,16 @@ func (e *IBusBambooEngine) ltProcessKeyEvent(keyVal uint32, keyCode uint32, stat
 	}
 	var keyRune = rune(keyVal)
 	if keyVal == IBusLeft || keyVal == IBusUp {
-		e.CursorUp()
+		e.cursorUp()
 		return true, true
 	} else if keyVal == IBusRight || keyVal == IBusDown {
-		e.CursorDown()
+		e.cursorDown()
 		return true, true
 	} else if keyVal == IBusPageUp {
-		e.PageUp()
+		e.pageUp()
 		return true, true
 	} else if keyVal == IBusPageDown {
-		e.PageDown()
+		e.pageDown()
 		return true, true
 	}
 	if keyVal == IBusReturn {
